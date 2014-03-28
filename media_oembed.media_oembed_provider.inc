@@ -88,7 +88,7 @@ https://www.nfb.ca/film/*';
   $providers['nfb'] = $provider;
 
   $provider = new stdClass();
-  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->disabled = TRUE; /* Edit this to true to make a default provider disabled initially */
   $provider->api_version = 1;
   $provider->name = 'noembed';
   $provider->admin_title = 'Noembed';
