@@ -324,6 +324,18 @@ function media_oembed_ctools_plugin_api($module, $api) {
 }
 
 /**
+ * Implements hook_file_metadata_info().
+ */
+function media_oembed_file_metadata_info() {
+  $info['media_oembed_local_thumbnail_path'] = array(
+    'label' => t('Media: oEmbed local thumbnail path'),
+    'type' => 'string',
+  );
+
+  return $info;
+}
+
+/**
  * Implements hook_file_operations().
  */
 function media_oembed_file_operations() {

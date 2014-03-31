@@ -76,29 +76,73 @@ class MediaOEmbedStreamWrapper extends MediaReadOnlyStreamWrapper {
 
   function getLocalThumbnailPath() {
     $uri = $this->getUri();
-    $url = drupal_realpath($uri);
-    $local_path = file_stream_wrapper_uri_normalize('public://oembed/'. $url);
+    $file = file_uri_to_object($uri);
 
-    if (!file_exists($local_path)) {
-      $dirname = drupal_dirname($local_path);
-      file_prepare_directory($dirname, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
-      $original_thumbnail_path = $this->getOriginalThumbnailPath();
+    // The path to the file's local thumbnail is stored in metadata as it can't
+    // be derived from the oEmbed URL.
+    // Check if a local thumbnail is available and use it. Otherwise, create a
+    // local copy of the original thumbnail.
+    if (!isset($file->metadata['media_oembed_local_thumbnail_path']) || !file_exists($file->metadata['media_oembed_local_thumbnail_path'])) {
+      // Attempt to get a URL to the file's original thumbnail.
+      $url = $this->getOriginalThumbnailPath();
 
-      if ($original_thumbnail_path) {
-        $response = drupal_http_request($original_thumbnail_path);
+      if (isset($url)) {
+        // Retrieve the original thumbnail.
+        $result = drupal_http_request($url);
 
-        if (!isset($response->error)) {
-          file_unmanaged_save_data($response->data, $local_path, TRUE);
+        // Using the redirect URL's basename might guarantee a path with an
+        // appropriate file extension.
+        if (isset($result->redirect_url)) {
+          // If the redirect and original basenames are identical, do nothing.
+          if (drupal_basename($result->redirect_url) != drupal_basename($url)) {
+            $url .= '/'. drupal_basename($result->redirect_url);
+          }
         }
-        else {
-          @copy($original_thumbnail_path, $local_path);
+
+        $parsed_url = parse_url($url);
+
+        // Store local copies of images using hostname, path and filename of
+        // source.
+        $path = $parsed_url['host'];
+        $path .= drupal_dirname($parsed_url['path']);
+
+        if (substr($path, -1) != '/') {
+          $path .= '/';
         }
-      }
-      else {
-        return FALSE;
+
+        $filename = drupal_basename($parsed_url['path']);
+
+        if (strpos($filename, '.') !== FALSE) {
+          $filename = file_munge_filename($filename, 'jpg jpeg gif png', FALSE);
+        }
+
+        $path .= $filename;
+        $local_uri = file_stream_wrapper_uri_normalize('public://media-oembed/'. $path);
+
+        if (!file_exists($local_uri)) {
+          /// Ensure filesystem has directories for new file.
+          $dirname = drupal_dirname($local_uri);
+          file_prepare_directory($dirname, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+
+          // Save the file data to the local directory.
+          file_unmanaged_save_data($result->data, $local_uri);
+        }
+
+        // Store the path to the local thumbnail in metadata.
+        $file->metadata['media_oembed_local_thumbnail_path'] = $local_uri;
+
+        // Save the file to update the metadata.
+        file_save($file);
       }
     }
 
-    return $local_path;
+    if (isset($file->metadata['media_oembed_local_thumbnail_path'])) {
+      $local_uri = $file->metadata['media_oembed_local_thumbnail_path'];
+
+      return $local_uri;
+    }
+    else {
+      return FALSE;
+    }
   }
 }
