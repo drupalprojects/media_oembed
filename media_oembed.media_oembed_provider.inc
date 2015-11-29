@@ -268,5 +268,18 @@ http://*.youtube.com/playlist*
 https://*.youtube.com/playlist*';
   $providers['youtube'] = $provider;
 
+  $provider = new stdClass();
+  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->api_version = 1;
+  $provider->name = 'ted';
+  $provider->admin_title = 'TED';
+  $provider->admin_description = 'TED is a global community, welcoming people from every discipline and culture who seek a deeper understanding of the world.';
+  $provider->endpoint = 'http://www.ted.com/services/v1/oembed.json';
+  $provider->scheme = 'http://ted.com/talks/*
+http://www.ted.com/talks/*
+https://ted.com/talks/*
+https://www.ted.com/talks/*
+';
+  $providers['ted'] = $provider;
   return $providers;
 }
