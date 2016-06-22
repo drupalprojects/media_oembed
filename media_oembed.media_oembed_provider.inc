@@ -132,6 +132,20 @@ https://*';
   $provider = new stdClass();
   $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
   $provider->api_version = 1;
+  $provider->name = 'podbean';
+  $provider->admin_title = 'Podbean';
+  $provider->admin_description = 'A better way to discover and play all your favorite podcasts anywhere, anytime.';
+  $provider->endpoint = 'https://www.podbean.com/media/oembed/';
+  $provider->scheme = 'http://www.podbean.com/media/share/*
+https://www.podbean.com/media/share/*
+http://www.podbean.com/media/player/*
+https://www.podbean.com/media/player/*
+';
+  $providers['podbean'] = $provider;
+
+  $provider = new stdClass();
+  $provider->disabled = FALSE; /* Edit this to true to make a default provider disabled initially */
+  $provider->api_version = 1;
   $provider->name = 'revision3';
   $provider->admin_title = 'Revision3';
   $provider->admin_description = 'Revision3 is a multi-channel internet television network that creates, produces and distributes web television shows on niche topics.';
